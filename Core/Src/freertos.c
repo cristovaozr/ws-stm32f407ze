@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * File Name          : freertos.c
@@ -16,59 +15,18 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
-/* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
-#include "cmsis_os.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */     
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-/* USER CODE BEGIN Variables */
-
-/* USER CODE END Variables */
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
-};
-
-/* Private function prototypes -----------------------------------------------*/
-/* USER CODE BEGIN FunctionPrototypes */
-   
-/* USER CODE END FunctionPrototypes */
-
-void StartDefaultTask(void *argument);
+static TaskHandle_t defaultTaskHandle;
+static void StartDefaultTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
 void vApplicationTickHook(void);
-
-/* USER CODE BEGIN 3 */
 __weak void vApplicationTickHook( void )
 {
    /* This function will be called by each tick interrupt if
@@ -77,65 +35,31 @@ __weak void vApplicationTickHook( void )
    code must not attempt to block, and only the interrupt safe FreeRTOS API
    functions can be used (those that end in FromISR()). */
 }
-/* USER CODE END 3 */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
-       
-  /* USER CODE END Init */
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
+ * @brief  FreeRTOS initialization
+ */
+void MX_FREERTOS_Init(void)
+{
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
+    xTaskCreate(
+        StartDefaultTask,
+        "DEFAULT",
+        configMINIMAL_STACK_SIZE,
+        NULL,
+        tskIDLE_PRIORITY,
+        &defaultTaskHandle);
 }
 
-/* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used 
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
+ * @brief  Function implementing the defaultTask thread.
+ * @param  argument: Not used 
+ */
 void StartDefaultTask(void *argument)
 {
-  /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartDefaultTask */
+    (void)argument;
+    for(;;) {
+        vTaskDelay(1);
+    }
 }
-
-/* Private application code --------------------------------------------------*/
-/* USER CODE BEGIN Application */
-     
-/* USER CODE END Application */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -15,19 +15,17 @@
 ######################################
 TARGET = ws-stm32f407ze
 
-
 ######################################
 # building variables
 ######################################
 # debug build?
 DEBUG = 1
 
-
 #######################################
 # paths
 #######################################
 # Build path
-BUILD_DIR = build
+BUILD_DIR = /tmp/build
 
 ######################################
 # source
@@ -52,6 +50,11 @@ C_SOURCES += \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
+	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
+	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
+	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
+	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
+	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
@@ -65,34 +68,27 @@ C_SOURCES += \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
-	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c \
-	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
-	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.c \
-	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
 	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
-	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c
+	Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
 
 C_SOURCES += \
-	Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
-	Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
-	Middlewares/Third_Party/FreeRTOS/Source/list.c \
-	Middlewares/Third_Party/FreeRTOS/Source/queue.c \
-	Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
-	Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-	Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-	Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
-	Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-	Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c  
+	FreeRTOS/croutine.c \
+	FreeRTOS/event_groups.c \
+	FreeRTOS/list.c \
+	FreeRTOS/queue.c \
+	FreeRTOS/stream_buffer.c \
+	FreeRTOS/tasks.c \
+	FreeRTOS/timers.c \
+	FreeRTOS/portable/MemMang/heap_4.c \
+	FreeRTOS/portable/GCC/ARM_CM4F/port.c
 
 # ASM sources
 ASM_SOURCES =  \
 	Core/startup_stm32f407xx.s
-
 
 #######################################
 # binaries
@@ -130,7 +126,6 @@ C_DEFS =  \
 	-DUSE_HAL_DRIVER \
 	-DSTM32F407xx
 
-
 # AS includes
 AS_INCLUDES =  \
 	-ICore/Inc
@@ -140,12 +135,10 @@ C_INCLUDES =  \
 	-ICore/Inc \
 	-IDrivers/STM32F4xx_HAL_Driver/Inc \
 	-IDrivers/STM32F4xx_HAL_Driver/Inc/Legacy \
-	-IMiddlewares/Third_Party/FreeRTOS/Source/include \
-	-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
-	-IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 	-IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
-	-IDrivers/CMSIS/Include
-
+	-IDrivers/CMSIS/Include \
+	-IFreeRTOS/include \
+	-IFreeRTOS/portable/GCC/ARM_CM4F
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall \
@@ -160,10 +153,8 @@ else
 CFLAGS += -Os
 endif
 
-
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
-
 
 #######################################
 # LDFLAGS
