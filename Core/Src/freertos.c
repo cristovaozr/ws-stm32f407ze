@@ -20,6 +20,9 @@
 #include "task.h"
 #include "main.h"
 
+#include <stdio.h>
+#include <driver/include/fildes.h>
+
 static TaskHandle_t defaultTaskHandle;
 static void StartDefaultTask(void *argument);
 
@@ -59,7 +62,12 @@ void MX_FREERTOS_Init(void)
 void StartDefaultTask(void *argument)
 {
     (void)argument;
-    for(;;) {
-        vTaskDelay(1);
+    extern FileDescriptor usartFileDescriptor;
+    StoreFileDescriptor(&usartFileDescriptor);
+    usartFileDescriptor.fileOperations->open(&usartFileDescriptor);
+
+    for(uint32_t i = 0;; i++) {
+        printf("Hello world for the %lu time", i);
+        vTaskDelay(500);
     }
 }

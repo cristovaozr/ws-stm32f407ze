@@ -1,21 +1,3 @@
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
-
 #include <FreeRTOS.h>
 #include <task.h>
 
@@ -36,24 +18,24 @@ extern void MX_FREERTOS_Init(void);
  */
 int main(void)
 {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-  SystemClock_Config();
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    HAL_Init();
+    SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_FSMC_Init();
-  MX_I2C1_Init();
-  MX_I2S2_Init();
-  MX_SDIO_SD_Init();
-  MX_USART2_UART_Init();
+    /* Initialize all configured peripherals */
+    // MX_GPIO_Init();
+    // MX_FSMC_Init();
+    // MX_I2C1_Init();
+    // MX_I2S2_Init();
+    // MX_SDIO_SD_Init();
+    MX_USART2_UART_Init();
 
-  /* Init scheduler */
-  MX_FREERTOS_Init(); 
-  /* Start scheduler */
-  vTaskStartScheduler();
- 
-  while (1);
+    /* Init scheduler */
+    MX_FREERTOS_Init(); 
+    /* Start scheduler */
+    vTaskStartScheduler();
+
+    while (1);
 }
 
 /**
