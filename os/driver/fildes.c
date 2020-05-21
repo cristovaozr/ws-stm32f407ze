@@ -26,6 +26,7 @@ int StoreFileDescriptor(FileDescriptor *fileDescriptor)
                 // TODO: Signal something went wrong
                 break;
             }
+            fileDescriptor->fd = i;
             files[i] = fileDescriptor;
             ret = 0;
             break;

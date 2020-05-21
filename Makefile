@@ -41,7 +41,6 @@ C_SOURCES =  \
     Core/Src/i2c.c \
     Core/Src/i2s.c \
     Core/Src/sdio.c \
-    Core/Src/usart.c \
     Core/Src/stm32f4xx_it.c \
     Core/Src/stm32f4xx_hal_msp.c \
     Core/Src/stm32f4xx_hal_timebase_tim.c \
@@ -89,14 +88,14 @@ C_SOURCES += \
     FreeRTOS/portable/GCC/ARM_CM4F/port.c
 
 C_SOURCES += \
-    os/newlib/close.c \
-    os/newlib/lseek.c \
-    os/newlib/read.c \
-    os/newlib/write.c
+    libc/stdio.c
+
+C_SOURCES += \
+    os/newlib/syscalls.c
 
 C_SOURCES += \
     os/driver/fildes.c \
-    os/driver/Impl/usartImpl.c
+    os/driver/Impl/usart.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -177,9 +176,9 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = Core/STM32F407ZETx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys
+LIBS = -lc -lm
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) \
+LDFLAGS = $(MCU) -specs=nano.specs  -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) \
     -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all

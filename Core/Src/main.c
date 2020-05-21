@@ -5,7 +5,6 @@
 #include "i2c.h"
 #include "i2s.h"
 #include "sdio.h"
-#include "usart.h"
 #include "gpio.h"
 #include "fsmc.h"
 
@@ -28,7 +27,6 @@ int main(void)
     // MX_I2C1_Init();
     // MX_I2S2_Init();
     // MX_SDIO_SD_Init();
-    MX_USART2_UART_Init();
 
     /* Init scheduler */
     MX_FREERTOS_Init(); 

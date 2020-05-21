@@ -49,7 +49,7 @@ void MX_FREERTOS_Init(void)
     xTaskCreate(
         StartDefaultTask,
         "DEFAULT",
-        configMINIMAL_STACK_SIZE,
+        256,
         NULL,
         tskIDLE_PRIORITY,
         &defaultTaskHandle);
@@ -67,7 +67,7 @@ void StartDefaultTask(void *argument)
     usartFileDescriptor.fileOperations->open(&usartFileDescriptor);
 
     for(uint32_t i = 0;; i++) {
-        printf("Hello world for the %lu time", i);
+        printf("Hello world for the %lu time\r\n", i);
         vTaskDelay(500);
     }
 }
