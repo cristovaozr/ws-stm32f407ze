@@ -88,14 +88,16 @@ C_SOURCES += \
     FreeRTOS/portable/GCC/ARM_CM4F/port.c
 
 C_SOURCES += \
-    libc/stdio.c
+    libc/ustdio.c \
+    libc/log.c
 
 C_SOURCES += \
     os/newlib/syscalls.c
 
 C_SOURCES += \
     os/driver/fildes.c \
-    os/driver/Impl/usart.c
+    os/driver/Impl/usart.c \
+    os/shell.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -151,7 +153,8 @@ C_INCLUDES =  \
     -IDrivers/CMSIS/Include \
     -IFreeRTOS/include \
     -IFreeRTOS/portable/GCC/ARM_CM4F \
-    -Ios
+    -Ios \
+    -I.
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall \

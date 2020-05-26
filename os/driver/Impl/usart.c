@@ -33,13 +33,12 @@ static ssize_t usart_Write(FileDescriptor *fildes, const void *buf, size_t size)
 
 static int usart_Init(FileDescriptor *fildes)
 {
-    fildes->txQueue = xQueueCreate(32, sizeof(uint8_t));
-    fildes->rxQueue = xQueueCreate(32, sizeof(uint8_t));
+    fildes->txQueue = xQueueCreate(128, sizeof(uint8_t));
+    fildes->rxQueue = xQueueCreate(128, sizeof(uint8_t));
     fildes->mutex = xSemaphoreCreateMutex();
 
     // Enable RXNE ISR
     MX_USART2_UART_Init();
-    LL_USART_EnableIT_RXNE((USART_TypeDef *)fildes->internalDevice);
     return 0;
 }
 
@@ -50,9 +49,9 @@ static int usart_Fini(FileDescriptor *fildes)
 
 static int usart_Open(FileDescriptor *fildes)
 {
-    LL_USART_EnableIT_RXNE((USART_TypeDef *)fildes->internalDevice);
-    NVIC_SetPriority(USART2_IRQn, 15);
+    NVIC_SetPriority(USART2_IRQn, 10);
     NVIC_EnableIRQ(USART2_IRQn);
+    LL_USART_EnableIT_RXNE((USART_TypeDef *)fildes->internalDevice);
     return 0;
 }
 

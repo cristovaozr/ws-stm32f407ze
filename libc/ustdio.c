@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <os/newlib/syscalls.h>
 
-int printf(const char *fmt, ...) {
-    char output[80];
+static char output[80];
+
+int uprintf(const char *fmt, ...) {
+    
     int ret;
     va_list ap;
     
@@ -16,14 +19,27 @@ int printf(const char *fmt, ...) {
     return ret;
 }
 
-int getchar(void) {
+int uvprintf(const char *fmt, va_list ap) {
+    int ret;
+    ret = vsnprintf(output, sizeof(output), fmt, ap);
+    _write(0, output, ret);
+    return ret;
+}
+
+int ugetchar(void) {
     uint8_t byte;
     _read(0, &byte, sizeof(byte));
     return (int)byte;
 }
 
-int putchar(int c) {
+int uputchar(int c) {
     uint8_t byte = (uint8_t)c;
     _write(0, &byte, sizeof(byte));
     return c;
+}
+
+int uputs(const char *s) {
+    int size = strlen(s);
+    _write(0, s, size + 1);
+    return size;
 }

@@ -46,13 +46,26 @@ void MX_FREERTOS_Init(void)
 {
   /* Create the thread(s) */
   /* creation of defaultTask */
+    extern FileDescriptor usartFileDescriptor;
+    StoreFileDescriptor(&usartFileDescriptor);
+    usartFileDescriptor.fileOperations->open(&usartFileDescriptor);
+
+    // xTaskCreate(
+    //     StartDefaultTask,
+    //     "DEFAULT",
+    //     256,
+    //     NULL,
+    //     tskIDLE_PRIORITY,
+    //     &defaultTaskHandle);
+
+    extern void ShellTask(void *);
     xTaskCreate(
-        StartDefaultTask,
-        "DEFAULT",
+        ShellTask,
+        "SHELL",
         256,
         NULL,
         tskIDLE_PRIORITY,
-        &defaultTaskHandle);
+        NULL);
 }
 
 /**
@@ -62,12 +75,9 @@ void MX_FREERTOS_Init(void)
 void StartDefaultTask(void *argument)
 {
     (void)argument;
-    extern FileDescriptor usartFileDescriptor;
-    StoreFileDescriptor(&usartFileDescriptor);
-    usartFileDescriptor.fileOperations->open(&usartFileDescriptor);
 
     for(uint32_t i = 0;; i++) {
-        printf("Hello world for the %lu time\r\n", i);
+        uprintf("Hello world for the %lu time\r\n", i);
         vTaskDelay(500);
     }
 }
