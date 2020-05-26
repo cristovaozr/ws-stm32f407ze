@@ -45,39 +45,16 @@ __weak void vApplicationTickHook( void )
 void MX_FREERTOS_Init(void)
 {
   /* Create the thread(s) */
-  /* creation of defaultTask */
-    extern FileDescriptor usartFileDescriptor;
-    StoreFileDescriptor(&usartFileDescriptor);
-    usartFileDescriptor.fileOperations->open(&usartFileDescriptor);
+    extern struct fildes usart;
+    store_fildes(&usart);
+    usart.fops->open(&usart);
 
-    // xTaskCreate(
-    //     StartDefaultTask,
-    //     "DEFAULT",
-    //     256,
-    //     NULL,
-    //     tskIDLE_PRIORITY,
-    //     &defaultTaskHandle);
-
-    extern void ShellTask(void *);
+    extern void shell_task(void *);
     xTaskCreate(
-        ShellTask,
+        shell_task,
         "SHELL",
         256,
         NULL,
         tskIDLE_PRIORITY,
         NULL);
-}
-
-/**
- * @brief  Function implementing the defaultTask thread.
- * @param  argument: Not used 
- */
-void StartDefaultTask(void *argument)
-{
-    (void)argument;
-
-    for(uint32_t i = 0;; i++) {
-        uprintf("Hello world for the %lu time\r\n", i);
-        vTaskDelay(500);
-    }
 }

@@ -2,7 +2,7 @@
 #include <libc/ustdio.h>
 #include <stdarg.h>
 
-void Log(LogLevel level, const char *tag, const char *fmt, ...)
+void ulog(enum log_level level, const char *tag, const char *fmt, ...)
 {
     va_list ap;
     const char *start, *greeting;
@@ -39,7 +39,7 @@ void Log(LogLevel level, const char *tag, const char *fmt, ...)
     uprintf(END_COLOR "\r\n");
 }
 
-void HexLog(const void *data, uint32_t len)
+void hex_ulog(const void *data, uint32_t len)
 {
     const uint8_t *udata = (const uint8_t *)data;
 

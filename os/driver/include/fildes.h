@@ -6,42 +6,42 @@
 #include <queue.h>
 #include <semphr.h>
 
-typedef struct FileOperations FileOperations;
+struct f_ops;
 
 /**
- * @brief Defines a FileDescriptor
+ * @brief Defines a struct fildes
  */
-typedef struct FileDescriptor {
+struct fildes {
     int fd;
-    const FileOperations *fileOperations;
-    QueueHandle_t txQueue;
-    QueueHandle_t rxQueue;
+    const struct f_ops *fops;
+    QueueHandle_t tx_queue;
+    QueueHandle_t rx_queue;
     SemaphoreHandle_t mutex;
-    void *internalDevice;
-} FileDescriptor;
+    void *internal_device;
+};
 
 
 /**
  * @brief Basic operations on files
  */
-typedef struct FileOperations {
-    int         (*init)(FileDescriptor *);
-    int         (*fini)(FileDescriptor *);
-    int         (*open)(FileDescriptor *);
-    int         (*close)(FileDescriptor *);
-    ssize_t     (*read)(FileDescriptor *, void *, size_t);
-    ssize_t     (*write)(FileDescriptor *, const void *, size_t);
-    off_t       (*lseek)(FileDescriptor*, off_t, int);
-} FileOperations;
+struct f_ops {
+    int         (*init)(struct fildes *);
+    int         (*fini)(struct fildes *);
+    int         (*open)(struct fildes *);
+    int         (*close)(struct fildes *);
+    ssize_t     (*read)(struct fildes *, void *, size_t);
+    ssize_t     (*write)(struct fildes *, const void *, size_t);
+    off_t       (*lseek)(struct fildes*, off_t, int);
+};
 
 /**
- * @brief Obtains a FileDescriptor object from a file descriptor number
+ * @brief Obtains a fildes object from a file descriptor number
  *
  * @param fd 
- * @return FileDescriptor* const 
+ * @return struct fildes* const 
  */
-extern FileDescriptor * const ObtainFileDescriptor(int fd);
+extern struct fildes * const obtain_fildes(int fd);
 
-extern int StoreFileDescriptor(FileDescriptor *fileDescriptor);
+extern int store_fildes(struct fildes *fildes);
 
 #endif // OS_DRIVER_INCLUDE_FILDES_H_

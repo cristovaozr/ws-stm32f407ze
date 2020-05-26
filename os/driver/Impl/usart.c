@@ -8,33 +8,33 @@
 
 static void MX_USART2_UART_Init(void);
 
-static ssize_t usart_Read(FileDescriptor *fildes, void *buf, size_t size)
+static ssize_t usart_Read(struct fildes *fildes, void *buf, size_t size)
 {
     ssize_t ret;
     xSemaphoreTake(fildes->mutex, portMAX_DELAY);
     for(ret = 0; ret < (ssize_t)size; ret++) {
-        xQueueReceive(fildes->rxQueue, &((uint8_t *)buf)[ret], portMAX_DELAY);
+        xQueueReceive(fildes->rx_queue, &((uint8_t *)buf)[ret], portMAX_DELAY);
     }
     xSemaphoreGive(fildes->mutex);
     return ret;
 }
 
-static ssize_t usart_Write(FileDescriptor *fildes, const void *buf, size_t size)
+static ssize_t usart_Write(struct fildes *fildes, const void *buf, size_t size)
 {
     ssize_t ret;
     xSemaphoreTake(fildes->mutex, portMAX_DELAY);
     for(ret = 0; ret < (ssize_t)size; ret++) {
-        xQueueSend(fildes->txQueue, &((const uint8_t *)buf)[ret], portMAX_DELAY);
-        LL_USART_EnableIT_TXE((USART_TypeDef *)fildes->internalDevice);
+        xQueueSend(fildes->tx_queue, &((const uint8_t *)buf)[ret], portMAX_DELAY);
+        LL_USART_EnableIT_TXE((USART_TypeDef *)fildes->internal_device);
     }
     xSemaphoreGive(fildes->mutex);
     return ret;
 }
 
-static int usart_Init(FileDescriptor *fildes)
+static int usart_Init(struct fildes *fildes)
 {
-    fildes->txQueue = xQueueCreate(128, sizeof(uint8_t));
-    fildes->rxQueue = xQueueCreate(128, sizeof(uint8_t));
+    fildes->tx_queue = xQueueCreate(128, sizeof(uint8_t));
+    fildes->rx_queue = xQueueCreate(128, sizeof(uint8_t));
     fildes->mutex = xSemaphoreCreateMutex();
 
     // Enable RXNE ISR
@@ -42,28 +42,28 @@ static int usart_Init(FileDescriptor *fildes)
     return 0;
 }
 
-static int usart_Fini(FileDescriptor *fildes)
+static int usart_Fini(struct fildes *fildes)
 {
     return 0;
 }
 
-static int usart_Open(FileDescriptor *fildes)
+static int usart_Open(struct fildes *fildes)
 {
     NVIC_SetPriority(USART2_IRQn, 10);
     NVIC_EnableIRQ(USART2_IRQn);
-    LL_USART_EnableIT_RXNE((USART_TypeDef *)fildes->internalDevice);
+    LL_USART_EnableIT_RXNE((USART_TypeDef *)fildes->internal_device);
     return 0;
 }
 
-static int usart_Close(FileDescriptor *fildes)
+static int usart_Close(struct fildes *fildes)
 {
-    LL_USART_DisableIT_TXE((USART_TypeDef *)fildes->internalDevice);
-    LL_USART_DisableIT_RXNE((USART_TypeDef *)fildes->internalDevice);
+    LL_USART_DisableIT_TXE((USART_TypeDef *)fildes->internal_device);
+    LL_USART_DisableIT_RXNE((USART_TypeDef *)fildes->internal_device);
     NVIC_DisableIRQ(USART2_IRQn);
     return 0;
 }
 
-const FileOperations usartFileOperations = {
+const struct f_ops usart_fops = {
     .init = usart_Init,
     .fini = usart_Fini,
     .open = usart_Open,
@@ -72,34 +72,34 @@ const FileOperations usartFileOperations = {
     .write = usart_Write,
 };
 
-FileDescriptor usartFileDescriptor = {
-    .fileOperations = &usartFileOperations,
-    .internalDevice = USART2,
+struct fildes usart = {
+    .fops = &usart_fops,
+    .internal_device = USART2,
 };
 
-static void USART_IrqHandler(FileDescriptor *usart)
+static void USART_IrqHandler(struct fildes *usart)
 {
-    if (LL_USART_IsActiveFlag_TXE((USART_TypeDef *)usart->internalDevice)) {
+    if (LL_USART_IsActiveFlag_TXE((USART_TypeDef *)usart->internal_device)) {
         BaseType_t contextSwitch;
 
-        while (LL_USART_IsActiveFlag_TXE((USART_TypeDef *)usart->internalDevice)) {
+        while (LL_USART_IsActiveFlag_TXE((USART_TypeDef *)usart->internal_device)) {
             uint8_t byte;
-            if (xQueueReceiveFromISR(usart->txQueue, &byte, &contextSwitch) == pdFAIL) {
-                LL_USART_DisableIT_TXE(usart->internalDevice);
+            if (xQueueReceiveFromISR(usart->tx_queue, &byte, &contextSwitch) == pdFAIL) {
+                LL_USART_DisableIT_TXE(usart->internal_device);
                 break;
             }
-            LL_USART_TransmitData8((USART_TypeDef *)usart->internalDevice, byte);
+            LL_USART_TransmitData8((USART_TypeDef *)usart->internal_device, byte);
         }
 
         portYIELD_FROM_ISR(contextSwitch);
     }
 
-    if (LL_USART_IsActiveFlag_RXNE((USART_TypeDef *)usart->internalDevice)) {
+    if (LL_USART_IsActiveFlag_RXNE((USART_TypeDef *)usart->internal_device)) {
         BaseType_t contextSwitch;
 
-        while (LL_USART_IsActiveFlag_RXNE((USART_TypeDef *)usart->internalDevice)) {
-            uint8_t byte = LL_USART_ReceiveData8((USART_TypeDef *)usart->internalDevice);
-            xQueueSendFromISR(usart->rxQueue, &byte, &contextSwitch);
+        while (LL_USART_IsActiveFlag_RXNE((USART_TypeDef *)usart->internal_device)) {
+            uint8_t byte = LL_USART_ReceiveData8((USART_TypeDef *)usart->internal_device);
+            xQueueSendFromISR(usart->rx_queue, &byte, &contextSwitch);
             // xQueueSendFromISR can return errQUEUE_FULL
         }
 
@@ -109,7 +109,7 @@ static void USART_IrqHandler(FileDescriptor *usart)
 
 void USART2_IRQHandler(void)
 {
-    USART_IrqHandler(&usartFileDescriptor);
+    USART_IrqHandler(&usart);
 }
 
 static void MX_USART2_UART_Init(void)

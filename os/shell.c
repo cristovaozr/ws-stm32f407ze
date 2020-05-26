@@ -8,20 +8,20 @@
 
 #define SHELL_BANNER "> "
 
-typedef struct FunctionList {
+struct function_list {
     const char *cmd;
-    int (*functionPointer)(int, char **);
-    const char *cmdHelp;
-} FunctionList;
+    int (*fp)(int, char **);
+    const char *help_str;
+};
 
-static const FunctionList cmdList[];
+static const struct function_list cmd_list[];
 
 /**
  * @brief Parses a line and chooses a command to execute
  * 
  * @param line 
  */
-static void processLine(char *line);
+static void process_line(char *line);
 
 /**
  * @brief Greeter that shows information on Shell start
@@ -33,7 +33,7 @@ static void greeter(void);
  */
 static char line[80];
 
-void ShellTask(void *arg)
+void shell_task(void *arg)
 {
     (void)arg;
     int pos = 0;
@@ -56,7 +56,7 @@ void ShellTask(void *arg)
         case '\r':
             uprintf("\r\n");
             line[pos] = '\0'; // EOL
-            processLine(line);
+            process_line(line);
             pos = 0;
             uprintf(SHELL_BANNER); // New line
             break;
@@ -90,8 +90,8 @@ static int help(int argc, char **argv)
     (void)argv;
 
     uprintf("\r\n");
-    for(int i = 0; cmdList[i].cmd; i++) {
-        uprintf("%s: %s\r\n", cmdList[i].cmd, cmdList[i].cmdHelp);
+    for(int i = 0; cmd_list[i].cmd; i++) {
+        uprintf("%s: %s\r\n", cmd_list[i].cmd, cmd_list[i].help_str);
     }
 
     return 0;
@@ -101,12 +101,12 @@ static int hexdump(int argc, char **argv)
 {
     if (argc < 2) return -1;
     char *endptr = NULL;
-    uint32_t addressVal = strtoul(argv[0], &endptr, 16);
+    uint32_t addr = strtoul(argv[0], &endptr, 16);
     if (endptr[0] != '\0') return -1;
     uint32_t len = strtoul(argv[1], &endptr, 10);
     if (endptr[0] != '\0') return -1;
-    const uint8_t *addr = (const uint8_t *)addressVal;
-    HEXDUMP(addr, len);
+    const uint8_t *uaddr = (const uint8_t *)addr;
+    HEXDUMP(uaddr, len);
     return 0;
 }
 
@@ -175,7 +175,7 @@ static int hexdump(int argc, char **argv)
 //     return 0;
 // }
 
-static const FunctionList cmdList[] = {
+static const struct function_list cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
@@ -183,7 +183,7 @@ static const FunctionList cmdList[] = {
     {NULL, NULL, NULL}
 };
 
-static void processLine(char *line)
+static void process_line(char *line)
 {
     char *saveptr, *cmd, *argv[8];
     int argc;
@@ -200,9 +200,9 @@ static void processLine(char *line)
     }
 
     // Looks for a command in the command list
-    for(int i = 0; cmdList[i].cmd; i++) {
-        if(strcmp(cmd, cmdList[i].cmd) == 0) {
-            int ret = cmdList[i].functionPointer(argc, argv);
+    for(int i = 0; cmd_list[i].cmd; i++) {
+        if(strcmp(cmd, cmd_list[i].cmd) == 0) {
+            int ret = cmd_list[i].fp(argc, argv);
             if (ret) {
                 uprintf("Error executing command: %s\r\n", cmd);
             }
@@ -210,6 +210,5 @@ static void processLine(char *line)
             return; // Found command. Executed (?) and now quit
         }
     }
-
    uprintf("Command not foud: %s\r\n", cmd);
 }

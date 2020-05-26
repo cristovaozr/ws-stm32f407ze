@@ -14,7 +14,7 @@ int uprintf(const char *fmt, ...) {
     
     va_start(ap, fmt);
     ret = vsnprintf(output, sizeof(output), fmt, ap);
-    _write(0, output, ret);
+    write(0, output, ret);
     va_end(ap);
     return ret;
 }
@@ -22,24 +22,24 @@ int uprintf(const char *fmt, ...) {
 int uvprintf(const char *fmt, va_list ap) {
     int ret;
     ret = vsnprintf(output, sizeof(output), fmt, ap);
-    _write(0, output, ret);
+    write(0, output, ret);
     return ret;
 }
 
 int ugetchar(void) {
     uint8_t byte;
-    _read(0, &byte, sizeof(byte));
+    read(0, &byte, sizeof(byte));
     return (int)byte;
 }
 
 int uputchar(int c) {
     uint8_t byte = (uint8_t)c;
-    _write(0, &byte, sizeof(byte));
+    write(0, &byte, sizeof(byte));
     return c;
 }
 
 int uputs(const char *s) {
     int size = strlen(s);
-    _write(0, s, size + 1);
+    write(0, s, size + 1);
     return size;
 }
