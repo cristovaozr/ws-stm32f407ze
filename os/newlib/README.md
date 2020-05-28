@@ -1,3 +1,3 @@
-# Newlib callbacs
+# Linux syscalls
 
-This folder contains callbacks for newlib hooks
+This folder contains callbacks for Linux syscalls

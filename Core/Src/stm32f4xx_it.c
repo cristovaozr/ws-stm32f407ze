@@ -19,14 +19,12 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "stm32f4xx_it.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 
-extern SD_HandleTypeDef hsd;
-extern TIM_HandleTypeDef htim6;
+// extern SD_HandleTypeDef hsd;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */ 
@@ -97,13 +95,5 @@ void I2C1_EV_IRQHandler(void)
   */
 void SDIO_IRQHandler(void)
 {
-    HAL_SD_IRQHandler(&hsd);
-}
-
-/**
-  * @brief This function handles TIM6 global interrupt, DAC1 and DAC2 underrun error interrupts.
-  */
-void TIM6_DAC_IRQHandler(void)
-{
-    HAL_TIM_IRQHandler(&htim6);
+    // HAL_SD_IRQHandler(&hsd);
 }

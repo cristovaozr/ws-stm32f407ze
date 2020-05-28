@@ -56,7 +56,7 @@ task.h is included from an application file. */
 #define heapBITS_PER_BYTE		( ( size_t ) 8 )
 
 /* Allocate the memory for the heap. */
-extern uint8_t _sdata, _ebss;
+extern uint8_t _ebss;
 static uint8_t *ucHeap = (uint8_t *)&_ebss;
 
 /* Define the linked list structure.  This is used to link free blocks in order

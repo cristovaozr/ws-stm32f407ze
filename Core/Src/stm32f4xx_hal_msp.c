@@ -19,8 +19,9 @@
   */
 /* USER CODE END Header */
 
+#include "stm32f4xx.h"
+
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */

@@ -1,13 +1,15 @@
-#include <FreeRTOS.h>
-#include <task.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "driver/include/fildes.h"
+#include "newlib/syscalls.h"
 
-#include "main.h"
-#include "i2c.h"
-#include "i2s.h"
-#include "sdio.h"
-#include "gpio.h"
-#include "fsmc.h"
+#include "stm32f4xx.h"
+#include "stm32f4xx_ll_rcc.h"
+#include "stm32f4xx_ll_system.h"
+#include "stm32f4xx_ll_pwr.h"
+#include "stm32f4xx_ll_utils.h"
 
+static void start_hardware(void);
 static void SystemClock_Config(void);
 extern void MX_FREERTOS_Init(void);
 
@@ -20,6 +22,8 @@ int main(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     SystemClock_Config();
+
+    start_hardware();
 
     /* Initialize all configured peripherals */
     // MX_GPIO_Init();
@@ -36,6 +40,14 @@ int main(void)
     while (1);
 }
 
+static void start_hardware(void)
+{
+    extern struct fildes usart;
+    store_fildes(&usart);
+
+    open("tty0", 0); // Open first so its file descriptor is 0
+}
+
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -43,9 +55,9 @@ int main(void)
 static void SystemClock_Config(void)
 {
     LL_FLASH_SetLatency(LL_FLASH_LATENCY_5);
-    if(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_5) {
-       Error_Handler();  
-    }
+    // if(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_5) {
+    //    Error_Handler();  
+    // }
     LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
     LL_RCC_HSE_Enable();
     /* Wait till HSE is ready */
@@ -69,26 +81,7 @@ static void SystemClock_Config(void)
     while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL);
     LL_SetSystemCoreClock(168000000);
 
-    /* Update the time base */
-    if (HAL_InitTick (TICK_INT_PRIORITY) != HAL_OK) {
-        Error_Handler();  
-    }
     LL_RCC_SetI2SClockSource(LL_RCC_I2S1_CLKSOURCE_PLLI2S);
-}
-
- /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM6 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim->Instance == TIM6) {
-        HAL_IncTick();
-    }
 }
 
 /**

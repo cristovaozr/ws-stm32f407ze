@@ -35,16 +35,14 @@ BUILD_DIR = /tmp/build
 # C sources
 C_SOURCES =  \
     Core/Src/main.c \
-    Core/Src/gpio.c \
     Core/Src/freertos.c \
-    Core/Src/fsmc.c \
-    Core/Src/i2c.c \
-    Core/Src/i2s.c \
-    Core/Src/sdio.c \
     Core/Src/stm32f4xx_it.c \
     Core/Src/stm32f4xx_hal_msp.c \
-    Core/Src/stm32f4xx_hal_timebase_tim.c \
     Core/Src/system_stm32f4xx.c
+    # Core/Src/fsmc.c \
+    # Core/Src/i2c.c \
+    # Core/Src/i2s.c \
+    # Core/Src/sdio.c \
 
 C_SOURCES += \
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
@@ -74,7 +72,7 @@ C_SOURCES += \
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.c \
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
+    Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
 
 C_SOURCES += \
     FreeRTOS/croutine.c \
@@ -97,7 +95,10 @@ C_SOURCES += \
 C_SOURCES += \
     os/driver/fildes.c \
     os/driver/Impl/usart.c \
-    os/shell.c
+    os/driver/Impl/gpio.c
+
+C_SOURCES += \
+    os/tasks/shell.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -161,7 +162,7 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) -Wall \
     -fdata-sections -ffunction-sections
 
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) -Wall \
-    -fdata-sections -ffunction-sections
+    -fdata-sections -ffunction-sections -std=gnu11
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -ggdb
@@ -179,9 +180,9 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = Core/STM32F407ZETx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm
+LIBS = -lc -lm -lnosys
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs  -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) \
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) \
     -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
@@ -208,9 +209,6 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 
-# $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-# 	$(HEX) $< $@
-	
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
 
@@ -222,7 +220,11 @@ $(BUILD_DIR):
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR)
-  
+
+
+write:
+	st-flash write $(BUILD_DIR)/$(TARGET).bin 0x08000000
+
 #######################################
 # dependencies
 #######################################

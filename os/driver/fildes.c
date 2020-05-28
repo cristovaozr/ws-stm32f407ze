@@ -34,3 +34,12 @@ int store_fildes(struct fildes *fildes)
 
     return ret;
 }
+
+struct fildes * const obtain_fildes_str(const char *str)
+{
+    for(int i = 0; i < ARRAY_SIZE(files); i++) {
+        if (strcmp(files[i]->path, str) == 0) return files[i];
+    }
+
+    return NULL;
+}

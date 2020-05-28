@@ -3,7 +3,9 @@
 
 #include <sys/types.h>
 
-extern int _close(int fd);
+extern int open(const char *pathname, int flags);
+
+extern int close(int fd);
 
 extern ssize_t read(int fd, void *data, size_t size);
 
