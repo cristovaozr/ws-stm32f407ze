@@ -1,10 +1,11 @@
-#include <FreeRTOS.h>
-#include <task.h>
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "libc/log.h"
+#include "libc/ustdio.h"
+#include "driver/include/ioctl_values.h"
+#include "newlib/syscalls.h"
 #include <string.h>
 #include <stdlib.h>
-#include <libc/log.h>
-#include <libc/ustdio.h>
 
 #define SHELL_BANNER "> "
 
@@ -117,69 +118,53 @@ static int hexdump(int argc, char **argv)
  * @param argv
  * @return int
  */
-// static int gpio(int argc, char **argv)
-// {
-//     #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-//     const static struct { const char *pinName; GpioDriver *gpio; } gpios[6] = {
-//         {"reg5v", OUTPUT_REG5V_ENABLE},
-//         {"user", INPUT_USER_BUTTON},
-//         {"redled", OUTPUT_RED_LED},
-//         {"yellowled", OUTPUT_YELLOW_LED},
-//         {"sigreset", OUTPUT_SIGFOX_RESET},
-//         {"sigwake", OUTPUT_SIGFOX_WAKEUP}
-//     };
+static int gpio(int argc, char **argv)
+{
+    int fd = 0, ret = 0;
+    struct gpio_ioctl gpio;
 
-//     if (argv[0][0] == 'h' || argv[0][0] == 'H') {
-//         uprintf("Available pins:\r\n");
-//         for(int j = 0; j < ARRAY_SIZE(gpios); j++) {
-//             uprintf("%s\r\n", gpios[j].pinName);
-//         }
-//         return 0;
-//     }
+    if((fd = open("gpio0", 0)) < 0) {
+        ERROR("shell", "Problem opening 'gpio0'");
+        ret = -1;
+        goto exit;
+    }
 
-//     if (argc < 2) {
-//         uprintf("Usage: gpio [r/w/h] [pinName] [0/1]\r\n");
-//         return -1;
-//     }
+    switch (argv[0][0]) {
+    case 'r':
+    case 'R':
+        gpio.pin = strtol(argv[1], NULL, 10);
+        if (ioctl(fd, IOCTL_GPIO_READ_PIN, &gpio)) {
+            ERROR("gpio", "Problem reading pin [%d]", gpio.pin);
+            ret = -1;
+            goto exit;
+        }
+        INFO("gpio", "Value read for pin %d is: %d", gpio.pin, gpio.value);
+        ret = 0;
+        break;
+    
+    case 'w':
+    case 'W':
+        WARN("gpio", "Write values unimplemented yet");
+        break;
 
-//     char *gpioName = argv[1];
-//     int gpioVal = strtol(argv[2], NULL, 10);
-//     int i;
+    default:
+        ERROR("shell", "Unknown argument: %c", argv[0][0]);
+        ret = -1;
+        break;
+    }
 
-//     for(i = 0; i < ARRAY_SIZE(gpios); i++) {
-//         if(strcmp(gpios[i].pinName, gpioName) == 0) {
-//             switch(argv[0][0]) {
-//             case 'r':
-//             case 'R':
-//                 uprintf("Pin value: %d\r\n", ReadPin((void *)gpios[i].gpio));
-//                 break;
-
-//             case 'w':
-//             case 'W':
-//                 WritePin((void *)gpios[i].gpio, !!gpioVal);
-//                 break;
-
-//             default:
-//                 uprintf("Usage: gpio [r/w/h] [pinName] [0/1]\r\n");
-//                 return -1;
-//             }
-//             break;
-//         }
-//     }
-
-//     if(i == ARRAY_SIZE(gpios)) {
-//         uprintf("pinName not found: %s\r\n", gpioName);
-//         return -1;
-//     }
-
-//     return 0;
-// }
+exit:
+    if (fd > 0) {
+        close(fd);
+    }
+    return ret;
+}
 
 static const struct function_list cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
-    // {"gpio", gpio, "Toggles a pin high or low. Usage gpio [r/w/h] [pin] [0/1]"},
+    {"gpio", gpio, "Toggles a pin high or low. Usage gpio [r/w] [pin] [0/1]"},
     {NULL, NULL, NULL}
 };
 

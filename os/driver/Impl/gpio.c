@@ -6,7 +6,7 @@
 
 #define JOY_A_PC13_Pin          LL_GPIO_PIN_13
 #define JOY_A_PC13_GPIO_Port    GPIOC
-#define JOY_B_PE6_Pin           LL_GPIO_PIN_5
+#define JOY_B_PE6_Pin           LL_GPIO_PIN_6
 #define JOY_B_PE6_GPIO_Port     GPIOE
 #define JOY_C_PE4_Pin           LL_GPIO_PIN_4
 #define JOY_C_PE4_GPIO_Port     GPIOE
@@ -99,7 +99,7 @@ static struct f_ops gpio_fops = {
     .ioctl = gpio_ioctl
 };
 
-struct fildes gpio_driver = {
+struct fildes gpio = {
     .path = "gpio0",
     .fops = &gpio_fops,
     .internal_device = &gpio_indev

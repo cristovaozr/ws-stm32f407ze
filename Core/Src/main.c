@@ -19,14 +19,10 @@ extern void MX_FREERTOS_Init(void);
  */
 int main(void)
 {
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-    HAL_Init();
     SystemClock_Config();
-
     start_hardware();
 
     /* Initialize all configured peripherals */
-    // MX_GPIO_Init();
     // MX_FSMC_Init();
     // MX_I2C1_Init();
     // MX_I2S2_Init();
@@ -43,7 +39,9 @@ int main(void)
 static void start_hardware(void)
 {
     extern struct fildes usart;
+    extern struct fildes gpio;
     store_fildes(&usart);
+    store_fildes(&gpio);
 
     open("tty0", 0); // Open first so its file descriptor is 0
 }
